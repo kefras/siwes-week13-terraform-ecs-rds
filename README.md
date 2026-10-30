@@ -13,46 +13,14 @@ The owner confirmed two running ECS tasks, two healthy ALB targets, live `/healt
 - RDS: `week13-mysql-db`, private MySQL, Multi-AZ; database `appdb`.
 - Current backend: local Terraform state. S3 backend/OIDC bootstrap exists as source only.
 
-## Architecture
+### AWS Infrastructure Architecture
 
-```mermaid
-flowchart TB
-  Client["Browser / HTTP client"]
-  subgraph AWS["AWS us-east-1"]
-    IGW["Existing Internet Gateway"]
-    subgraph VPC["Existing VPC: vpc-08cb55538e782f57c"]
-      subgraph PUB["Two public subnets: us-east-1a and us-east-1b"]
-        ALB["One internet-facing ALB spanning both subnets<br/>HTTP listener :80"]
-      end
-      TG["Target group: IP targets :8000<br/>GET /health - success HTTP 200"]
-      subgraph PRIVATE["Two private subnets: us-east-1a and us-east-1b"]
-        Service["ECS Fargate service: week13-ecs-app<br/>desired 2; CPU target 70%; min 2 / max 4"]
-        Tasks["Two application tasks<br/>FastAPI :8000; no public IPs"]
-        DB["Existing private RDS MySQL<br/>Multi-AZ; appdb; writer endpoint :3306"]
-        Endpoints["Interface endpoints with private DNS<br/>ecr.api / ecr.dkr / logs / secretsmanager<br/>Each service has an ENI in both private subnets"]
-      end
-      S3GW["Existing S3 gateway endpoint<br/>Both private route tables; no NAT default route"]
-    end
-    ECR["Existing ECR: week13-ecs-app<br/>Deployed v2; v1 preserved"]
-    Secret["RDS-managed Secrets Manager secret<br/>username and password JSON keys"]
-    Logs["CloudWatch Logs<br/>/ecs/week13-ecs-app; retention 7 days"]
-    S3["S3: ECR image layers"]
-    IAM["Task execution role: scoped ECR / logs / secret access<br/>Task role: no application AWS API permissions"]
-  end
-  Client -->|"HTTP :80"| IGW
-  IGW --> ALB
-  ALB --> TG
-  TG -->|"HTTP :8000; ALB SG only"| Tasks
-  Service -.->|"schedules and replaces"| Tasks
-  Tasks -->|"MySQL :3306; certificate-verified TLS; SELECT 1"| DB
-  Tasks -->|"Runtime AWS service traffic: HTTPS :443"| Endpoints
-  Endpoints --> ECR
-  Endpoints --> Secret
-  Endpoints --> Logs
-  Tasks -->|"HTTPS :443; regional S3 prefix list"| S3GW
-  S3GW --> S3
-  IAM -.->|"Fargate pulls image, fetches secret, sends logs"| Tasks
-```
+![Week 13 AWS Architecture Diagram](docs/diagrams/week13-aws-architecture.png)
+
+*Figure 1: Week 13 AWS infrastructure deployed using Terraform, featuring ECS Fargate, Application Load Balancer, private RDS MySQL Multi-AZ, Amazon ECR, CloudWatch, Secrets Manager, and VPC endpoints.*
+
+[View alternative architecture diagram](docs/diagrams/week13-architecture-alternative.png) | [View Mermaid architecture source](docs/architecture.mmd)
+
 
 The diagram shows the deployed data plane, not a deployed CI/backend system. It does not assign the RDS primary/standby to specific AZs. Both private subnets are configured for tasks; capture actual per-task AZ placement rather than inferring it from a task count. [Standalone Mermaid source](docs/architecture.mmd).
 
