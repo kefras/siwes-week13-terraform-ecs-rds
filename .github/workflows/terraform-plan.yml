@@ -1,0 +1,61 @@
+name: Terraform PR plan
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: week13-state
+  cancel-in-progress: false
+jobs:
+  plan:
+    # Disabled until a dedicated repository, state backend and reviewer gates are approved.
+    if: ${{ false }}
+    environment: terraform-plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    steps:
+
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.16.6
+          terraform_wrapper: false
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.TF_PLAN_ROLE_ARN }}
+          aws-region: us-east-1
+      - name: Require migrated, locked state
+        shell: bash
+        env:
+          STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+        run: |
+          test -n "$STATE_BUCKET"
+          cp ci/backend.tf.example backend.tf
+          terraform init -input=false -lockfile=readonly -backend-config="bucket=$STATE_BUCKET" -backend-config="key=week13/terraform.tfstate" -backend-config="region=us-east-1" -backend-config="encrypt=true" -backend-config="use_lockfile=true"
+          terraform state list > /tmp/state-addresses
+          for address in module.rds.aws_db_instance.this aws_ecr_repository.ecs_app aws_security_group.ecs_app aws_security_group.alb; do
+            grep -Fxq "$address" /tmp/state-addresses || { echo "Wrong or empty remote state: $address missing"; exit 1; }
+          done
+      - run: terraform validate -no-color
+
+      - name: Plan and reject destructive or protected changes
+        shell: bash
+        run: |
+          terraform plan -input=false -lock-timeout=5m -no-color -out=review.tfplan > /tmp/terraform-plan.txt
+          terraform show -json review.tfplan | python3 scripts/review_plan.py | tee /tmp/plan-summary.txt
+      - name: Post review summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('/tmp/plan-summary.txt', 'utf8');
+            const fullPlan = fs.readFileSync('/tmp/terraform-plan.txt', 'utf8');
+            const body = ['Terraform plan for ' + context.payload.pull_request.head.sha, '', '```text', summary, fullPlan.slice(0, 55000), '```', 'Review the complete local plan if this comment is truncated. No binary plan or state artifact is uploaded.'].join('\n');
+            await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body});
+      - name: Remove local plan
+        if: always()
+        run: rm -f review.tfplan /tmp/terraform-plan.txt

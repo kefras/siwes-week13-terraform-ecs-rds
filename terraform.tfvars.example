@@ -1,0 +1,6 @@
+# Nonsecret environment identifiers. Copy to ignored terraform.tfvars locally.
+vpc_id = "vpc-08cb55538e782f57c"
+private_subnet_ids = ["subnet-0982d8fffa95c1dd5", "subnet-0e2eaf1cd6e2a5882"]
+app_security_group_ids = []
+private_route_table_ids = ["rtb-078e4dfb83561e68f", "rtb-027cf6be69569d7ff"]
+existing_s3_endpoint_id = "vpce-0329441a661f73268"
