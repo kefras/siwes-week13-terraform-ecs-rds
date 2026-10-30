@@ -15,7 +15,7 @@ The owner confirmed two running ECS tasks, two healthy ALB targets, live `/healt
 
 ### AWS Infrastructure Architecture
 
-![Week 13 AWS Architecture Diagram](docs/diagrams/week13-aws-architecture.png)
+![Week 13 AWS Architecture Diagram](https://github.com/kefras/siwes-week13-terraform-ecs-rds/blob/main/docs/assets/week13-aws-architecture.png)
 
 *Figure 1: Week 13 AWS infrastructure deployed using Terraform, featuring ECS Fargate, Application Load Balancer, private RDS MySQL Multi-AZ, Amazon ECR, CloudWatch, Secrets Manager, and VPC endpoints.*
 
