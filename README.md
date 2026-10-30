@@ -13,6 +13,10 @@ The owner confirmed two running ECS tasks, two healthy ALB targets, live `/healt
 - RDS: `week13-mysql-db`, private MySQL, Multi-AZ; database `appdb`.
 - Current backend: local Terraform state. S3 backend/OIDC bootstrap exists as source only.
 
+## Architecture
+
+![Week 13 AWS Architecture](docs/assets/week13-architecture.png)
+
 ### AWS Infrastructure Architecture
 
 ![Week 13 AWS Architecture Diagram](docs/diagrams/week13-aws-architecture.png)
