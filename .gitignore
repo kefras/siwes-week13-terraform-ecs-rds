@@ -89,3 +89,17 @@ htmlcov/
 node_modules/
 .DS_Store
 Thumbs.db
+
+/week14-backups/
+
+# Week 14 local MySQL TLS certificates
+/app/certs/mysql-local/
+
+# Local MySQL TLS certificates and private keys
+/app/certs/mysql-local/
+
+# Local Docker inspection backups
+week14-mysql-inspect.json
+
+# Local database backups
+/app/backups/
