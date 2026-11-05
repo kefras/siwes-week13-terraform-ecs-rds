@@ -1,0 +1,6 @@
+[mysqld]
+ssl-ca=/etc/mysql/week14-tls/ca.pem
+ssl-cert=/etc/mysql/week14-tls/server-cert.pem
+ssl-key=/etc/mysql/week14-tls/server-key.pem
+require_secure_transport=ON
+tls_version=TLSv1.2,TLSv1.3
