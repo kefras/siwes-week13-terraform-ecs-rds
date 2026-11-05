@@ -18,7 +18,7 @@ module "rds" {
   allowed_security_group_ids = concat([aws_security_group.ecs_app.id], var.app_security_group_ids)
   db_name                    = "appdb"
   db_username                = "adminuser"
-  multi_az                   = true
+  multi_az                   = false
 }
 
 module "ecs" {

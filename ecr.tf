@@ -1,7 +1,12 @@
+
 resource "aws_ecr_repository" "ecs_app" {
-  lifecycle { prevent_destroy = true }
   name                 = "week13-ecs-app"
   image_tag_mutability = "MUTABLE"
+  force_delete         = true
+
+  lifecycle {
+    prevent_destroy = false
+  }
 
   image_scanning_configuration {
     scan_on_push = true

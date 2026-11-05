@@ -40,7 +40,7 @@ resource "aws_vpc_security_group_ingress_rule" "mysql" {
 
 
 resource "aws_db_instance" "this" {
-  lifecycle { prevent_destroy = true }
+  lifecycle { prevent_destroy = false }
   identifier = "week13-mysql-db"
 
   engine         = "mysql"
