@@ -103,3 +103,5 @@ week14-mysql-inspect.json
 
 # Local database backups
 /app/backups/
+
+/week14-plan-review.txt
