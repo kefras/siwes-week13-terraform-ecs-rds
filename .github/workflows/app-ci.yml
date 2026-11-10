@@ -35,20 +35,20 @@ jobs:
             week13-ecs-app:ci \
             -c "import fastapi, uvicorn, pymysql, cryptography; print('Dependencies OK')"
 
-      - name: Run application unit tests
-        run: |
+            - name: Run application unit tests
+          run: |
           docker run --rm \
             -v "$PWD/app/tests:/app/tests:ro" \
             --entrypoint /opt/venv/bin/python \
             week13-ecs-app:ci \
             -m unittest discover -s /app/tests -v
 
-            - name: Scan Docker image with Trivy
-              uses: aquasecurity/trivy-action@v0.36.0
-              with:
-                image-ref: week13-ecs-app:ci
-                format: table
-                exit-code: '1'
-                severity: CRITICAL,HIGH
-                vuln-type: os,library
-                ignore-unfixed: false
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: week13-ecs-app:ci
+          format: table
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+          vuln-type: os,library
+          ignore-unfixed: false
