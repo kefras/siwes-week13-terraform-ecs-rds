@@ -28,14 +28,14 @@ jobs:
         run: |
           test "$(docker image inspect week13-ecs-app:ci --format '{{.Config.User}}')" = "appuser"
 
-      - name: Verify runtime dependencies
-        run: |
+            - name: Verify runtime dependencies
+           run: |
           docker run --rm \
             --entrypoint /opt/venv/bin/python \
             week13-ecs-app:ci \
             -c "import fastapi, uvicorn, pymysql, cryptography; print('Dependencies OK')"
 
-            - name: Run application unit tests
+             - name: Run application unit tests
           run: |
           docker run --rm \
             -v "$PWD/app/tests:/app/tests:ro" \
