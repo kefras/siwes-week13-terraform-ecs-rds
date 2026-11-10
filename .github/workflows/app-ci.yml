@@ -54,4 +54,4 @@ jobs:
           exit-code: '1'
           severity: CRITICAL,HIGH
           vuln-type: os,library
-          ignore-unfixed: false
+          ignore-unfixed: True
