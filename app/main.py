@@ -50,3 +50,11 @@ def health():
     except Exception:
         raise HTTPException(status_code=503, detail="Database unavailable") from None
     return {"status": "ok", "database": "connected"}
+
+@app.get("/version")
+def version():
+    return {
+        "application": "week13-ecs-app",
+        "version": "v3",
+        "environment": os.getenv("APP_ENV", "unknown")
+    }

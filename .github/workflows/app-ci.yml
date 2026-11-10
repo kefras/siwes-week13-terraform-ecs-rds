@@ -1,0 +1,52 @@
+
+name: FastAPI Docker CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  app-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build production Docker image
+        run: |
+          docker build --pull \
+            -t week13-ecs-app:ci \
+            ./app
+
+      - name: Verify non-root execution
+        run: |
+          test "$(docker image inspect week13-ecs-app:ci --format '{{.Config.User}}')" = "appuser"
+
+      - name: Verify runtime dependencies
+        run: |
+          docker run --rm \
+            --entrypoint /opt/venv/bin/python \
+            week13-ecs-app:ci \
+            -c "import fastapi, uvicorn, pymysql, cryptography; print('Dependencies OK')"
+
+      - name: Run application unit tests
+        run: |
+          docker run --rm \
+            -v "$PWD/app/tests:/app/tests:ro" \
+            --entrypoint /opt/venv/bin/python \
+            week13-ecs-app:ci \
+            -m unittest discover -s /app/tests -v
+
+      - name: Install Docker Scout
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: local://week13-ecs-app:ci
+          only-severities: critical,high
+          exit-code: true
