@@ -43,10 +43,12 @@ jobs:
             week13-ecs-app:ci \
             -m unittest discover -s /app/tests -v
 
-      - name: Install Docker Scout
-        uses: docker/scout-action@v1
-        with:
-          command: cves
-          image: local://week13-ecs-app:ci
-          only-severities: critical,high
-          exit-code: true
+            - name: Scan Docker image with Trivy
+              uses: aquasecurity/trivy-action@v0.36.0
+              with:
+                image-ref: week13-ecs-app:ci
+                format: table
+                exit-code: '1'
+                severity: CRITICAL,HIGH
+                vuln-type: os,library
+                ignore-unfixed: false
